@@ -108,6 +108,13 @@ async function setupOpenId() {
             `[openidStrategy] user ${user ? 'found' : 'not found'} with openidId: ${userinfo.sub}`,
           );
 
+          if (!user && process.env.OPENID_MATCH_USERNAME) {
+            user = await findUser({ username: userinfo.sub });
+            logger.info(
+              `[openidStrategy] user ${user ? 'found' : 'not found'} by username for openidId: ${userinfo.sub}`,
+            );
+          }
+
           if (!user) {
             user = await findUser({ email: userinfo.email });
             logger.info(
@@ -159,7 +166,10 @@ async function setupOpenId() {
           }
 
           const username = convertToUsername(
-            userinfo.username || userinfo.given_name || userinfo.email,
+            (process.env.OPENID_USERNAME && userinfo[process.env.OPENID_USERNAME])
+              || userinfo.username
+              || userinfo.given_name
+              || userinfo.email,
           );
 
           if (!user) {

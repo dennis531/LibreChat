@@ -86,6 +86,13 @@ const ldapLogin = new LdapStrategy(ldapOptions, async (userinfo, done) => {
 
     let user = await findUser({ ldapId });
 
+    if (!user && process.env.LDAP_MATCH_USERNAME) {
+      user = await findUser({ username: ldapId });
+      logger.info(
+        `[ldapStrategy] user ${user ? 'found' : 'not found'} by username for ldapId: ${ldapId}`,
+      );
+    }
+
     const fullNameAttributes = LDAP_FULL_NAME && LDAP_FULL_NAME.split(',');
     const fullName =
       fullNameAttributes && fullNameAttributes.length > 0
